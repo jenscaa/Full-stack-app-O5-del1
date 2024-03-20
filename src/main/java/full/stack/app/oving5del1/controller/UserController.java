@@ -24,10 +24,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@CrossOrigin
+@CrossOrigin()
 @RestController
 @RequestMapping("/oving5del1")
-public class Controller {
+public class UserController {
 
   @Autowired
   UserRepository userRepository;
@@ -36,7 +36,7 @@ public class Controller {
   @Autowired
   private CalculateService calculateService;
 
-  private final Logger logger = LoggerFactory.getLogger(Controller.class);
+  private final Logger logger = LoggerFactory.getLogger(UserController.class);
 
   @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> createUser(@RequestBody UserDTO userDTO) {
@@ -52,31 +52,8 @@ public class Controller {
 
 
 
-  @PostMapping("/calculations")
-  public ResponseEntity<Double> createCalculation(@RequestBody CalculationDTO calculationDTO) {
-    try {
-      String username = calculationDTO.getUsername();
-      String expression = calculationDTO.getExpression();
-      User user = userRepository.findByUsername(username);
-      if (user == null) {
-        logger.info("User don't exists in database");
-        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-
-      Integer userId = userRepository.findIdByUsername(user.getUsername());
-      double answer = calculateService.calculateExpression(expression);
-      System.out.println(answer);
-      calculationRepository.save(new Calculation(expression, expression + "=" + answer), userId);
-      logger.info("Calculation added");
-      return new ResponseEntity<>(answer, HttpStatus.CREATED);
-
-    } catch (Exception e) {
-      logger.info("Something bad happened here. IDK.");
-      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @CrossOrigin
   public ResponseEntity<String> logIn(@RequestBody UserDTO userDTO) {
     try {
       if(calculateService.authenticate(userDTO)) {
@@ -85,13 +62,14 @@ public class Controller {
       }
       return new ResponseEntity<>("User was not logged in successfully.", HttpStatus.BAD_REQUEST);
     }catch (Exception e) {
-      logger.error("Error occured during authentication");
+      logger.error("Error occurred during authentication");
       return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @PostMapping(value = "/logOut")
   public ResponseEntity<String> logOut(@RequestBody String username) {
+    logger.warn("This endpoint was reached OMG!!!");
     try {
       if(calculateService.logOut(username)) {
         logger.info("User: " + username + " logged off");
@@ -125,6 +103,30 @@ public class Controller {
       }
       return new ResponseEntity<>(users, HttpStatus.OK);
     } catch (Exception e) {
+      return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @PostMapping("/calculations")
+  public ResponseEntity<Double> createCalculation(@RequestBody CalculationDTO calculationDTO) {
+    try {
+      String username = calculationDTO.getUsername();
+      String expression = calculationDTO.getExpression();
+      User user = userRepository.findByUsername(username);
+      if (user == null) {
+        logger.info("User don't exists in database");
+        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+      Integer userId = userRepository.findIdByUsername(user.getUsername());
+      double answer = calculateService.calculateExpression(expression);
+      // System.out.println(answer);
+      calculationRepository.save(new Calculation(expression, expression + "=" + answer), userId);
+      logger.info("Calculation added");
+      return new ResponseEntity<>(answer, HttpStatus.CREATED);
+
+    } catch (Exception e) {
+      logger.info("Something bad happened here. IDK.");
       return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

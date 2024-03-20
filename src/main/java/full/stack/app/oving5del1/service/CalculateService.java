@@ -26,8 +26,9 @@ public class CalculateService {
   UserRepository userRepository;
   private final Logger logger = LoggerFactory.getLogger(CalculateService.class);
 
-  private final Set<String> activeUsers = new HashSet<>();
+  public final Set<String> activeUsers = new HashSet<>();
 
+  // TODO Get rid of this shit code.
   public boolean authenticate(UserDTO userDTO) {
     User user = userRepository.findByUsername(userDTO.getUsername());
     if (user == null) {

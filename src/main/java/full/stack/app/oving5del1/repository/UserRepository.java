@@ -3,6 +3,7 @@ package full.stack.app.oving5del1.repository;
 import full.stack.app.oving5del1.model.User;
 import java.util.List;
 
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -48,6 +49,17 @@ public class UserRepository {
     } catch (IncorrectResultSizeDataAccessException e) {
       return 0;
     }
+  }
+
+  public boolean isInDatabase(String username, String password) {
+    List<User> userList = findAllUsers();
+    for (User user : userList) {
+      if (Objects.equals(user.getUsername(), username) &&
+          Objects.equals(user.getUserPassword(), password)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public User findByUsername(String username) {
